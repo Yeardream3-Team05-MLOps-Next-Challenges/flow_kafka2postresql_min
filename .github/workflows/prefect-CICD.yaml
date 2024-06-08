@@ -31,10 +31,11 @@ jobs:
         env:
           PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
           PREFECT_DEFAULT_DOCKER_BUILD_NAMESPACE: ${{ secrets.PREFECT_DOCKER_NAMESPACE }}
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }} 
+          KAFKA_URL: ${{ secrets.KAFKA_URL }} 
+          DB_URL: ${{ secrets.DB_URL }} 
         run: |
           pip install -r requirements.txt
-          python flow.py
+          python deploy.py
 
       - name: action-slack
         uses: 8398a7/action-slack@v3
