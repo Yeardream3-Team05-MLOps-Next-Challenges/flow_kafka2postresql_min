@@ -11,4 +11,4 @@ COPY . /opt/prefect/flows
 
 WORKDIR /opt/prefect/flows
 
-CMD ["python", "./flow/flow.py"]
+CMD ["python", "./flows/flow.py"]
