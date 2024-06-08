@@ -16,7 +16,7 @@ if __name__ == "__main__":
             tag="0.1",
             dockerfile="Dockerfile",
             platform="linux/arm64",
-            buildargs={"TOPIC_NAME": os.getenv("TOPIC_NAME"),
+            buildargs={
                        "KAFKA_URL": os.getenv("KAFKA_URL"),
                        "DB_URL": os.getenv("DB_URL"),
                        },
