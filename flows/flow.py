@@ -12,7 +12,7 @@ def read_kafka(topic_name, kafka_url):
     # Consumer 설정
     conf = {
         'bootstrap.servers': kafka_url,
-        'group.id': 'prefect',
+        'group.id': 'min_kafka2postgresql_flow',
         'auto.offset.reset': 'earliest'
     }
     consumer = Consumer(**conf)
@@ -78,7 +78,7 @@ def min_kafka2postgresql_flow(topic_name, kafka_url, db_url):
     write_db(kafka_data, db_url)
 
 if __name__ == "__main__":
-    topic_name = os.getenv("TOPIC_NAME")
+    topic_name = 'ttmin'
     kafka_url = os.getenv("KAFKA_URL")
     db_url = os.getenv("DB_URL")
 
