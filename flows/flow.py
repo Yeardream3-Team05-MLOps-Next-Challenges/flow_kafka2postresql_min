@@ -57,7 +57,8 @@ def read_kafka(topic_name, kafka_url):
                     'open': value['open'],
                     'high': value['high'],
                     'low': value['low'],
-                    'close': value['close']
+                    'close': value['close'],
+                    'candle': value['candle'],
                 })
     finally:
         consumer.close()
