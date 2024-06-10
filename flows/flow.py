@@ -79,7 +79,7 @@ def min_kafka2postgresql_flow(topic_name, kafka_url, db_url):
     write_db(kafka_data, db_url)
 
 if __name__ == "__main__":
-    topic_name = 'ttmin'
+    topic_name = os.getenv("TOPIC_NAME")
     kafka_url = os.getenv("KAFKA_URL")
     db_url = os.getenv("DB_URL")
 

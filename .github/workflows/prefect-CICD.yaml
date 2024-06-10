@@ -31,6 +31,7 @@ jobs:
         env:
           PREFECT_API_URL: ${{ secrets.PREFECT_API_URL }}
           PREFECT_DEFAULT_DOCKER_BUILD_NAMESPACE: ${{ secrets.PREFECT_DOCKER_NAMESPACE }}
+          TOPIC_NAME: ${{ vars.TOPIC_NAME }} 
           KAFKA_URL: ${{ secrets.KAFKA_URL }} 
           DB_URL: ${{ secrets.DB_URL }} 
         run: |
