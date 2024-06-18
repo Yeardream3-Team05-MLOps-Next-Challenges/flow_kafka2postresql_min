@@ -74,7 +74,7 @@ def write_db(data_source, db_url):
     data_source.to_sql('kafka_data', engine, if_exists='append', index=False)
 
 @flow
-def min_kafka2postgresql_flow(topic_name, kafka_url, db_url):
+def hun_min_kafka2postgresql_flow(topic_name, kafka_url, db_url):
     kafka_data = read_kafka(topic_name, kafka_url)
     write_db(kafka_data, db_url)
 
@@ -83,4 +83,4 @@ if __name__ == "__main__":
     kafka_url = os.getenv("KAFKA_URL")
     db_url = os.getenv("DB_URL")
 
-    min_kafka2postgresql_flow(topic_name, kafka_url, db_url)
+    hun_min_kafka2postgresql_flow(topic_name, kafka_url, db_url)
