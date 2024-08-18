@@ -1,6 +1,12 @@
 FROM prefecthq/prefect:2.18.3-python3.10
 
-# Define build-time variable
+ARG TOPIC_NAME
+ARG KAFKA_URL
+ARG DB_URL
+
+ENV TOPIC_NAME=${TOPIC_NAME}
+ENV KAFKA_URL=${KAFKA_URL}
+ENV DB_URL=${DB_URL}
 
 COPY requirements.txt .
 
