@@ -71,7 +71,7 @@ def read_kafka(topic_name, kafka_url):
 @task
 def write_db(data_source, db_url):
     engine = create_engine(db_url)
-    data_source.to_sql('kafka_data', engine, if_exists='append', index=False)
+    data_source.to_sql('flow_kafka2postresql_min', engine, if_exists='append', index=False)
 
 @flow
 def hun_min_kafka2postgresql_flow():
