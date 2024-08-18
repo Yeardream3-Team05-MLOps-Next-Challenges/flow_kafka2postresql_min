@@ -3,3 +3,4 @@ requests==2.31.0
 confluent_kafka==2.4.0
 pandas==2.2.2
 sqlalchemy==2.0.30
+griffe==0.48.0
