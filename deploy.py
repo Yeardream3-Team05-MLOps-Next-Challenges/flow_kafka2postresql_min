@@ -13,7 +13,7 @@ if __name__ == "__main__":
         work_queue_name="docker-agent",
         image=DeploymentImage(
             name="hun-min-kafka2postgresql",
-            tag="0.1.1",
+            tag="0.1.2",
             dockerfile="Dockerfile",
             platform="linux/arm64",
             buildargs={
@@ -22,6 +22,6 @@ if __name__ == "__main__":
                        "DB_URL": os.getenv("DB_URL"),
                        },
         ),
-        schedule=(CronSchedule(cron="*/5 8-20 * * *", timezone="Asia/Seoul")),
+        schedule=(CronSchedule(cron="*/5 8-20 * * 1-5", timezone="Asia/Seoul")),
         build=True,
     )
