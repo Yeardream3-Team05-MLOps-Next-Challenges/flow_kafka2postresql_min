@@ -3,14 +3,24 @@ import os
 import pandas as pd
 import json
 from sqlalchemy import create_engine
+import logging
 
 from prefect import flow, task, get_run_logger
 
 # 로깅 설정
-logger = get_run_logger()
+def get_logger():
+    try:
+        return get_run_logger()
+    except Exception:
+        logging.basicConfig(level=logging.INFO)
+        return logging.getLogger(__name__)
+logger = get_logger()
+
 
 @task
 def read_kafka(topic_name, kafka_url):
+    global logger
+
     logger.info(f"Attempting to read from Kafka topic: {topic_name}")
     
     # Consumer 설정
@@ -76,6 +86,8 @@ def read_kafka(topic_name, kafka_url):
 
 @task
 def write_db(data_source, db_url):
+    global logger
+
     logger.info("Attempting to write data to PostgreSQL")
     try:
         engine = create_engine(db_url)
