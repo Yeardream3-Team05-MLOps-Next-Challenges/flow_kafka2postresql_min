@@ -1,13 +1,17 @@
-from confluent_kafka import Consumer, TopicPartition
+from confluent_kafka import Consumer, TopicPartition, KafkaException
 import os
 import pandas as pd
 import json
 from sqlalchemy import create_engine
 
-from prefect import flow, task
+from prefect import flow, task, get_run_logger
+
+# 로깅 설정
+logger = get_run_logger()
 
 @task
 def read_kafka(topic_name, kafka_url):
+    logger.info(f"Attempting to read from Kafka topic: {topic_name}")
     
     # Consumer 설정
     conf = {
@@ -15,35 +19,30 @@ def read_kafka(topic_name, kafka_url):
         'group.id': 'min_kafka2postgresql_flow',
         'auto.offset.reset': 'earliest'
     }
-    consumer = Consumer(**conf)
-
-    # 토픽의 모든 파티션 조회
-    partitions = consumer.list_topics(topic_name).topics[topic_name].partitions.keys()
-    topic_partitions = [TopicPartition(topic_name, p) for p in partitions]
-
-    # 각 파티션의 최신 offset 조회
-    end_offsets = consumer.get_watermark_offsets(topic_partitions[0])
-
-    # 최신 offset으로 파티션 설정
-    for i in range(len(topic_partitions)):
-        topic_partitions[i].offset = end_offsets[1]
-
-    # 모든 파티션을 구독
-    consumer.assign(topic_partitions)
-
-    data = []
+    
     try:
+        consumer = Consumer(**conf)
+        # 토픽의 모든 파티션 조회
+        partitions = consumer.list_topics(topic_name).topics[topic_name].partitions.keys()
+        topic_partitions = [TopicPartition(topic_name, p) for p in partitions]
+        
+        data = []
         for partition in topic_partitions:
-            # 각 파티션별로 최신 offset까지 메시지 읽기
-            consumer.seek(partition)
+            # 각 파티션의 시작과 끝 오프셋 조회
+            start_offset, end_offset = consumer.get_watermark_offsets(partition)
+            partition.offset = start_offset  # 시작 오프셋부터 읽기 시작
+            
+            logger.info(f"Reading partition {partition.partition} from offset {start_offset} to {end_offset}")
+            
+            consumer.assign([partition])
             while True:
                 msg = consumer.poll(1.0)
-                if msg is None or msg.offset() >= partition.offset:
-                    break 
-                if msg.error():
-                    print(msg.error())
+                if msg is None:
                     continue
-
+                if msg.error():
+                    logger.error(f"Consumer error: {msg.error()}")
+                    continue
+                
                 # 메시지 처리
                 value = json.loads(msg.value().decode('utf-8'))
                 data.append({
@@ -53,25 +52,38 @@ def read_kafka(topic_name, kafka_url):
                     'timestamp': msg.timestamp()[1],
                     'window_start': value['window']['start'],
                     'window_end': value['window']['end'],
-                    'stock_code': value['종목코드'],  # '종목코드'에 맞게 수정
+                    'stock_code': value['종목코드'],
                     'open': value['open'],
                     'high': value['high'],
                     'low': value['low'],
                     'close': value['close'],
                     'candle': value['candle'],
                 })
+                
+                if msg.offset() + 1 >= end_offset:
+                    break
+        
+        # 데이터프레임으로 변환
+        df = pd.DataFrame(data)
+        logger.info(f"Successfully read {len(df)} records from Kafka")
+        return df
+    
+    except KafkaException as e:
+        logger.error(f"Kafka error: {e}")
+        raise
     finally:
         consumer.close()
 
-    # 데이터프레임으로 변환
-    df = pd.DataFrame(data)
-
-    return df
-
 @task
 def write_db(data_source, db_url):
-    engine = create_engine(db_url)
-    data_source.to_sql('flow_kafka2postresql_min', engine, if_exists='append', index=False)
+    logger.info("Attempting to write data to PostgreSQL")
+    try:
+        engine = create_engine(db_url)
+        data_source.to_sql('flow_kafka2postresql_min', engine, if_exists='append', index=False)
+        logger.info(f"Successfully wrote {len(data_source)} records to PostgreSQL")
+    except Exception as e:
+        logger.error(f"Database error: {e}")
+        raise
 
 @flow
 def hun_min_kafka2postgresql_flow():
