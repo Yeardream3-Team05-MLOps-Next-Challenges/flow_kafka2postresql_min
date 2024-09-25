@@ -7,19 +7,30 @@ import logging
 
 from prefect import flow, task, get_run_logger
 
-# 로깅 설정
-def get_logger():
-    try:
-        return get_run_logger()
-    except Exception:
-        logging.basicConfig(level=logging.INFO)
-        return logging.getLogger(__name__)
-logger = get_logger()
 
+# Prefect 환경 여부를 확인하는 함수
+def is_prefect_env():
+    try:
+        get_run_logger()
+        return True
+    except Exception:
+        return False
+
+# 로깅 설정
+if not is_prefect_env():
+    l_level = getattr(logging, os.getenv('PREFECT_LOGGING_LEVEL'), logging.INFO)
+    logging.basicConfig(level=l_level)
+
+
+def get_logger():
+    if is_prefect_env():
+        return get_run_logger()
+    else:
+        return logging.getLogger(__name__)
 
 @task
 def read_kafka(topic_name, kafka_url):
-    global logger
+    logger = get_logger()
     logger.info(f"Attempting to read from Kafka topic: {topic_name}")
     
     conf = {
@@ -93,7 +104,7 @@ def read_kafka(topic_name, kafka_url):
 
 @task
 def write_db(data_source, db_url):
-    global logger
+    logger = get_logger()
 
     logger.info("Attempting to write data to PostgreSQL")
     try:
@@ -106,6 +117,7 @@ def write_db(data_source, db_url):
 
 @flow
 def hun_min_kafka2postgresql_flow():
+    logger = get_logger()
 
     topic_name = os.getenv("TOPIC_NAME")
     kafka_url = os.getenv("KAFKA_URL")

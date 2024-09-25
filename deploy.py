@@ -13,10 +13,11 @@ if __name__ == "__main__":
         work_queue_name="docker-agent",
         image=DeploymentImage(
             name="hun-min-kafka2postgresql",
-            tag="0.1.4",
+            tag="0.1.5",
             dockerfile="Dockerfile",
             platform="linux/arm64",
             buildargs={
+                       "LOGGING_LEVEL": os.getenv("LOGGING_LEVEL"),
                        "TOPIC_NAME": os.getenv("TOPIC_NAME"),
                        "KAFKA_URL": os.getenv("KAFKA_URL"),
                        "DB_URL": os.getenv("DB_URL"),
