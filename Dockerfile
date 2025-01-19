@@ -3,18 +3,24 @@ FROM prefecthq/prefect:2.18.3-python3.10
 ARG TOPIC_NAME
 ARG KAFKA_URL
 ARG DB_URL
+ARG VERSION
 
+ENV VERSION=$VERSION
 ENV TOPIC_NAME=${TOPIC_NAME}
 ENV KAFKA_URL=${KAFKA_URL}
 ENV DB_URL=${DB_URL}
 
-COPY requirements.txt .
+COPY pyproject.toml poetry.lock* ./
 
-RUN python -m pip install --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install --upgrade pip\
+    && pip install --no-cache-dir poetry \
+    && poetry config virtualenvs.create false \
+    && poetry install --no-root \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY . /opt/prefect/flows
 
 WORKDIR /opt/prefect/flows
 
-CMD ["python", "./flows/flow.py"]
+CMD ["python", "./flow.py"]
