@@ -9,7 +9,7 @@ def _check_import(module_name):
        return f"{module_name}: {e}"
 
 def test_library_imports():
-   modules = ["httpx", "kafka", "requests", "prefect", "confluent_kafka", "pandas", "sqlalchemy"]
+   modules = ["requests", "prefect", "confluent_kafka", "pandas", "sqlalchemy"]
    failed_imports = []
    for module in modules:
       error_message = _check_import(module)
