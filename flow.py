@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from confluent_kafka import Consumer, TopicPartition, KafkaException
 import os
 import pandas as pd
@@ -26,9 +27,18 @@ def get_logger():
         return get_run_logger()
     else:
         return logging.getLogger(__name__)
+=======
+import os
+from prefect import flow, task
+>>>>>>> test
+
+from src.logger import get_logger, setup_logging
+from src.logic import read_kafka_logic, write_db_logic
+
 
 @task
 def read_kafka(topic_name, kafka_url):
+<<<<<<< HEAD
     logger = get_logger()
     logger.info(f"Attempting to read from Kafka topic: {topic_name}")
     
@@ -118,6 +128,21 @@ def write_db(data_source, db_url):
 def hun_min_kafka2postgresql_flow():
     logger = get_logger()
 
+=======
+    """Kafka에서 데이터를 읽어오는 Prefect 태스크."""
+    return read_kafka_logic(topic_name, kafka_url)
+
+@task
+def write_db(data_source, db_url):
+    """데이터베이스에 데이터를 쓰는 Prefect 태스크."""
+    write_db_logic(data_source, db_url)
+
+@flow
+def hun_min_kafka2postgresql_flow():
+    """전체 데이터 처리 플로우를 정의하는 Prefect 플로우."""
+    setup_logging()
+    
+>>>>>>> test
     topic_name = os.getenv("TOPIC_NAME")
     kafka_url = os.getenv("KAFKA_URL")
     db_url = os.getenv("DB_URL")
@@ -135,6 +160,6 @@ def hun_min_kafka2postgresql_flow():
     finally:
         consumer.close()
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     hun_min_kafka2postgresql_flow()
