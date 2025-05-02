@@ -13,7 +13,7 @@ def read_kafka_logic(topic_name, kafka_url, group_id='min_kafka2postgresql_flow'
     conf = {
         'bootstrap.servers': kafka_url,
         'group.id': group_id,
-        'auto.offset.reset': 'earlist',
+        'auto.offset.reset': 'earliest',
         'enable.auto.commit': False 
     }
     consumer = Consumer(**conf)
